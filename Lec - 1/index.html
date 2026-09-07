@@ -1,0 +1,1219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lecture 1 — Intro, Norms, Mean &amp; Variance</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300;1,400&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+
+<!-- MathJax for LaTeX Rendering -->
+<script>
+  MathJax = {
+    tex: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']],
+      displayMath: [['$$', '$$'], ['\\[', '\\]']]
+    },
+    chtml: {
+      displayAlign: 'center'
+    }
+  };
+</script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+
+<style>
+:root {
+  /* Modern Academic Theme */
+  --bg-color: #F8F9FA;
+  --paper-bg: #FFFFFF;
+  --text-main: #2D3748;
+  --text-muted: #718096;
+  --accent-primary: #3182CE;
+  --accent-secondary: #E53E3E;
+  --accent-soft: #EBF8FF;
+  --border-light: #E2E8F0;
+  --border-dark: #CBD5E0;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.02);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  --max-width: 800px;
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  padding: 40px 20px;
+  background: var(--bg-color);
+  color: var(--text-main);
+  font-family: "Merriweather", Georgia, serif;
+  font-size: 16px;
+  line-height: 1.8;
+  -webkit-font-smoothing: antialiased;
+}
+
+.sheet {
+  max-width: 960px;
+  margin: 0 auto;
+  background: var(--paper-bg);
+  padding: 60px 80px 100px;
+  border-radius: 12px;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border-light);
+}
+
+@media(max-width: 768px) {
+  body { padding: 0; }
+  .sheet { padding: 40px 24px; border-radius: 0; border: none; }
+}
+
+/* ---------- Typography & Headings ---------- */
+h1, h2, h3, h4, .ui-text {
+  font-family: "Inter", system-ui, sans-serif;
+}
+
+header.masthead {
+  padding-bottom: 40px;
+  border-bottom: 3px solid var(--text-main);
+  margin-bottom: 40px;
+}
+
+.datestamp {
+  font-family: "Fira Code", monospace;
+  font-weight: 500;
+  font-size: 13px;
+  color: var(--accent-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin: 0 0 16px;
+}
+
+h1 {
+  font-weight: 700;
+  font-size: clamp(32px, 5vw, 56px);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: #1A202C;
+  margin: 0 0 24px;
+}
+
+.standfirst {
+  font-size: 18px;
+  color: var(--text-muted);
+  max-width: 65ch;
+  margin: 0;
+  font-weight: 300;
+}
+
+h2 {
+  font-weight: 700;
+  font-size: 28px;
+  color: #1A202C;
+  margin: 64px 0 24px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--border-light);
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+h2 .marker {
+  font-family: "Fira Code", monospace;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--accent-secondary);
+  opacity: 0.8;
+}
+
+h3 {
+  font-weight: 600;
+  font-size: 20px;
+  color: #2D3748;
+  margin: 40px 0 16px;
+}
+
+h4 {
+  font-weight: 600;
+  font-size: 16px;
+  margin: 28px 0 12px;
+  color: var(--accent-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+p { max-width: var(--max-width); margin: 0 0 20px; }
+
+/* ---------- Navigation ---------- */
+nav.toc {
+  margin: 40px 0 0;
+  padding: 30px 24px;
+  background: var(--bg-color);
+  border-radius: 8px;
+  border: 1px solid var(--border-light);
+}
+
+nav.toc ol {
+  list-style: none;
+  margin: 0; padding: 0;
+  columns: 2;
+  column-gap: 40px;
+}
+
+@media(max-width:640px) { nav.toc ol { columns: 1; } }
+
+nav.toc li {
+  break-inside: avoid;
+  margin: 0 0 12px;
+  font-family: "Inter", sans-serif;
+  font-size: 14px;
+}
+
+nav.toc a {
+  color: var(--text-main);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+nav.toc a:hover { color: var(--accent-primary); }
+
+nav.toc .n {
+  color: var(--text-muted);
+  font-family: "Fira Code", monospace;
+  margin-right: 12px;
+  font-size: 12px;
+}
+
+/* ---------- Timeline/Eras ---------- */
+.era {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 24px;
+  padding: 24px 0;
+  border-bottom: 1px solid var(--border-light);
+}
+.era:last-of-type { border-bottom: none; }
+.era-years {
+  font-family: "Fira Code", monospace;
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--accent-secondary);
+  padding-top: 4px;
+}
+.era-name {
+  font-family: "Inter", sans-serif;
+  font-weight: 600;
+  font-size: 18px;
+  margin: 0 0 12px;
+  color: #1A202C;
+}
+.era ul { margin: 0; padding: 0; list-style: none; }
+.era li { margin: 0 0 12px; max-width: 65ch; position: relative; padding-left: 72px; }
+.yr {
+  position: absolute;
+  left: 0;
+  top: 2px;
+  font-family: "Inter", sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--accent-primary);
+  background: var(--accent-soft);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+@media(max-width: 640px) {
+  .era { grid-template-columns: 1fr; gap: 8px; }
+  .era-years { padding-top: 0; }
+}
+
+/* ---------- Definition Blocks ---------- */
+.defn {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 24px;
+  padding: 24px;
+  background: var(--bg-color);
+  border-left: 4px solid var(--text-muted);
+  margin-bottom: 16px;
+  border-radius: 0 8px 8px 0;
+}
+.defn-src {
+  font-family: "Inter", sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text-main);
+}
+.defn-body { margin: 0; font-style: italic; }
+
+/* ---------- Equations & Math ---------- */
+.eq {
+  background: #FFFFFF;
+  border: 1px solid var(--border-dark);
+  border-left: 4px solid var(--accent-primary);
+  border-radius: 6px;
+  padding: 24px 32px;
+  margin: 32px 0;
+  overflow-x: auto;
+  box-shadow: var(--shadow-sm);
+}
+.eq.center { text-align: center; }
+.eq.key {
+  border-left-color: var(--accent-secondary);
+  background: #FFF5F5;
+  border-color: #FEB2B2;
+}
+.eq .label {
+  display: block;
+  font-family: "Inter", sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+.reason { color: var(--text-muted); font-size: 14px; font-style: italic; margin-left: 12px; font-family: "Inter", sans-serif;}
+
+/* ---------- Tables ---------- */
+.tw { overflow-x: auto; margin: 32px 0; border-radius: 8px; border: 1px solid var(--border-light); }
+table {
+  border-collapse: collapse;
+  width: 100%;
+  background: var(--paper-bg);
+  font-size: 15px;
+  font-family: "Inter", sans-serif;
+}
+th, td {
+  padding: 16px 24px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-light);
+}
+thead th {
+  font-weight: 600;
+  color: var(--text-main);
+  background: var(--bg-color);
+  border-bottom: 2px solid var(--border-dark);
+}
+tbody tr:last-child td { border-bottom: none; }
+td.num { font-variant-numeric: tabular-nums; }
+th.rowlab, td.rowlab { font-weight: 600; color: var(--text-main); width: 180px; }
+
+/* ---------- Lists ---------- */
+ol.vocab { counter-reset: v; list-style: none; margin: 24px 0; padding: 0; }
+ol.vocab li {
+  counter-increment: v; position: relative;
+  padding: 12px 0 12px 48px; border-bottom: 1px solid var(--border-light);
+}
+ol.vocab li::before {
+  content: counter(v) "."; position: absolute; left: 0; top: 12px;
+  font-family: "Fira Code", monospace; font-size: 14px; font-weight: 600; color: var(--accent-primary);
+}
+ol.vocab b { font-family: "Inter", sans-serif; color: #1A202C; }
+ol.vocab .gloss { color: var(--text-muted); font-style: italic; }
+
+ul.plain { list-style: none; padding: 0; margin: 16px 0; }
+ul.plain li { padding: 8px 0 8px 24px; position: relative; }
+ul.plain li::before {
+  content: ""; position: absolute; left: 0; top: 18px;
+  width: 8px; height: 2px; background: var(--accent-primary);
+}
+
+/* ---------- Figures ---------- */
+.figrow {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 32px; margin: 40px 0;
+}
+figure {
+  margin: 0; background: var(--bg-color);
+  border: 1px solid var(--border-light);
+  border-radius: 8px; padding: 24px;
+  display: flex; flex-direction: column; align-items: center;
+}
+figure svg { display: block; width: 100%; height: auto; max-width: 250px; }
+figcaption {
+  font-family: "Inter", sans-serif; font-size: 14px; color: var(--text-muted);
+  margin-top: 20px; line-height: 1.5; text-align: center;
+}
+figcaption b { color: var(--text-main); font-weight: 600; display: block; margin-bottom: 4px; }
+
+/* ---------- ML Pipeline Diagram ---------- */
+.pipe {
+  background: var(--bg-color);
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  padding: 40px 32px;
+  margin: 32px 0;
+}
+.pipe-row {
+  display: grid;
+  grid-template-columns: 1fr 40px 180px 40px 1fr;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 40px;
+}
+.pipe-row:last-child { margin-bottom: 0; }
+.pipe-in, .pipe-out {
+  display: flex; flex-direction: column; gap: 12px;
+}
+.pipe-in div, .pipe-out div {
+  background: #FFF; border: 1px solid var(--border-dark); border-radius: 6px;
+  padding: 12px; font-family: "Inter", sans-serif; font-weight: 600; font-size: 14px;
+  text-align: center; box-shadow: var(--shadow-sm);
+}
+.pipe-in div span, .pipe-out div span {
+  display: block; font-weight: 400; font-size: 13px; color: var(--text-muted);
+  font-family: "Merriweather", serif; font-style: italic; margin-top: 4px;
+}
+.pipe-box {
+  background: var(--accent-primary); color: #FFF;
+  border-radius: 6px; padding: 20px 16px; text-align: center;
+  font-family: "Inter", sans-serif; font-weight: 600; font-size: 15px;
+  line-height: 1.4; box-shadow: var(--shadow-md);
+}
+.pipe-arrow {
+  color: var(--text-muted);
+  display: flex; justify-content: center;
+}
+
+@media(max-width: 768px) {
+  .pipe-row { grid-template-columns: 1fr; gap: 16px; text-align: center; }
+  .pipe-arrow { transform: rotate(90deg); margin: 8px 0; }
+}
+
+/* ---------- Callouts ---------- */
+.note {
+  border-left: 4px solid var(--accent-primary);
+  background: var(--accent-soft);
+  padding: 20px 24px;
+  margin: 32px 0;
+  border-radius: 0 8px 8px 0;
+  font-size: 15.5px;
+}
+.note p { margin: 0; }
+.note strong { font-weight: 600; color: var(--accent-primary); }
+
+/* ---------- Rules of thumb ---------- */
+.rules {
+  counter-reset: r; list-style: none; padding: 0; margin: 32px 0;
+}
+.rules li {
+  counter-increment: r; position: relative; padding: 16px 0 16px 56px;
+  border-bottom: 1px solid var(--border-light); font-size: 17px;
+}
+.rules li::before {
+  content: counter(r); position: absolute; left: 0; top: 14px;
+  font-family: "Inter", sans-serif; font-weight: 700; font-size: 14px;
+  color: var(--accent-secondary); width: 32px; height: 32px; line-height: 32px;
+  text-align: center; background: #FFF5F5; border-radius: 50%;
+}
+
+footer {
+  margin-top: 80px; padding-top: 32px;
+  border-top: 1px solid var(--border-light);
+  font-family: "Inter", sans-serif; font-size: 14px; color: var(--text-muted);
+  text-align: center;
+}
+
+a { color: var(--accent-primary); text-decoration: none; border-bottom: 1px solid transparent; transition: border 0.2s; }
+a:hover { border-bottom-color: var(--accent-primary); }
+
+/* =========================================
+   PRINT / PDF EXPORT STYLES
+   ========================================= */
+@media print {
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  body { background: #FFF; padding: 0; margin: 0; font-size: 11pt; }
+  
+  .sheet {
+    box-shadow: none; border: none; padding: 0; margin: 0;
+    max-width: 100%; border-radius: 0;
+  }
+
+  nav.toc { display: none; }
+
+  h1, h2, h3, h4 { page-break-after: avoid; break-after: avoid; }
+
+  .eq, figure, table, .note, .pipe, .defn, .era, .tw {
+    page-break-inside: avoid; break-inside: avoid; margin-bottom: 24px;
+  }
+  
+  section { padding-top: 10px; }
+  
+  .figrow { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+}
+</style>
+</head>
+<body>
+<div class="sheet">
+
+<header class="masthead">
+  <p class="datestamp">31 / 08 / 2026 &nbsp;·&nbsp; Lecture 1</p>
+  <h1>History of AI,<br>Norms, Mean &amp; Variance</h1>
+  <p class="standfirst">Foundations for machine learning: where the field came from, the vocabulary we will use all term, and the linear algebra and statistics everything else is built on.</p>
+
+  <nav class="toc" aria-label="Contents">
+    <ol>
+      <li><span class="n">01</span><a href="#history">History of AI</a></li>
+      <li><span class="n">02</span><a href="#overview">Overview of ML</a></li>
+      <li><span class="n">03</span><a href="#nesting">AI, ML and DL</a></li>
+      <li><span class="n">04</span><a href="#chef">The robot chef</a></li>
+      <li><span class="n">05</span><a href="#vocab">Taxonomy and vocabulary</a></li>
+      <li><span class="n">06</span><a href="#types">Types of learning</a></li>
+      <li><span class="n">07</span><a href="#dot">Vectors and dot products</a></li>
+      <li><span class="n">08</span><a href="#norms">Norms</a></li>
+      <li><span class="n">09</span><a href="#lp">The L<sub>p</sub> family</a></li>
+      <li><span class="n">10</span><a href="#meanvar">Mean and variance</a></li>
+      <li><span class="n">11</span><a href="#corr">Correlation</a></li>
+    </ol>
+  </nav>
+</header>
+
+<!-- ============================ 1. HISTORY ============================ -->
+<section id="history">
+  <h2><span class="marker">01</span>History of AI</h2>
+
+  <div class="era">
+    <div class="era-years">1943 – 1956</div>
+    <div>
+      <p class="era-name">Birth</p>
+      <ul>
+        <li><span class="yr">1943</span>McCulloch &amp; Pitts: first model of a neuron (threshold).</li>
+        <li><span class="yr">1950</span>Turing test is proposed.</li>
+        <li><span class="yr">1956</span>The term <em>artificial intelligence</em> is coined.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="era">
+    <div class="era-years">1956 – 1974</div>
+    <div>
+      <p class="era-name">Golden years</p>
+      <ul>
+        <li><span class="yr">1958</span>Rosenblatt's perceptron — the weights are <em>learned</em>.</li>
+        <li><span class="yr">1965</span>First expert system (if–else rules).</li>
+        <li><span class="yr">1969</span>Minsky &amp; Papert, <em>Perceptrons</em>: a single-layer perceptron can only separate data that is <em>linearly separable</em>, so it cannot compute XOR.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="era">
+    <div class="era-years">1974 – 1980</div>
+    <div>
+      <p class="era-name">First AI winter</p>
+      <ul>
+        <li>Combinatorial explosion: rule-based methods scale exponentially.</li>
+        <li>Hardware had to catch up to the software.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="era">
+    <div class="era-years">1980 – 1993</div>
+    <div>
+      <p class="era-name">Expert systems: boom and bust</p>
+      <ul>
+        <li><span class="yr">1980–87</span>The era of expert systems.</li>
+        <li><span class="yr">1986</span>Rumelhart, Hinton &amp; Williams popularize backpropagation. Multi-layer networks become trainable — 17 years after the XOR result.</li>
+        <li><span class="yr">1987–93</span>Expert systems prove too expensive to maintain: every case needs separate handling.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="era">
+    <div class="era-years">1990 – 1999</div>
+    <div>
+      <p class="era-name">Statistical turn</p>
+      <ul>
+        <li><span class="yr">Early 90s</span>Chuck the idea of general intelligence in favour of narrow problems.</li>
+        <li><span class="yr">1995</span>Support vector machines (Cortes &amp; Vapnik).</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="era">
+    <div class="era-years">2000 – 2011</div>
+    <div>
+      <p class="era-name">Data era</p>
+      <ul>
+        <li><span class="yr">2007</span>CUDA: GPUs become programmable.</li>
+        <li><span class="yr">2009</span>ImageNet: 14 million labelled images.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="era">
+    <div class="era-years">2012 – 2019</div>
+    <div>
+      <p class="era-name">Deep learning revolution</p>
+      <ul>
+        <li><span class="yr">2012</span>AlexNet: error rate falls from ~26% to ~16%.</li>
+        <li><span class="yr">2017</span><em>Attention Is All You Need</em> — the Transformer.</li>
+        <li><span class="yr">2018</span>BERT and GPT-1: pre-train on unlabelled text, fine-tune downstream.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="era">
+    <div class="era-years">2020 – 2024</div>
+    <div>
+      <p class="era-name">Scale</p>
+      <ul>
+        <li><span class="yr">2020</span>GPT-3.</li>
+        <li><span class="yr">2022</span>ChatGPT — RLHF plus a chat interface.</li>
+        <li><span class="yr">2024</span>Reasoning models.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="era">
+    <div class="era-years">2025 – now</div>
+    <div>
+      <p class="era-name">Agents</p>
+      <ul>
+        <li><span class="yr">2025</span>Shift from question-answering models to models that <em>act</em>: multi-step tasks.</li>
+        <li><span class="yr">2026</span>On-device inference.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ 2. OVERVIEW ============================ -->
+<section id="overview">
+  <h2><span class="marker">02</span>Overview of ML</h2>
+
+  <h3>Artificial intelligence</h3>
+  <p>Any method that tries to replicate the results of some aspect of human cognition.</p>
+
+  <div class="defn">
+    <div class="defn-src">Russell &amp; Norvig</div>
+    <p class="defn-body">The study of agents that receive percepts from the environment and perform actions.</p>
+  </div>
+  <div class="defn">
+    <div class="defn-src">Elaine Rich</div>
+    <p class="defn-body">The study of how to make computers do things at which, at the moment, people are better.</p>
+  </div>
+
+  <h3>Machine learning</h3>
+
+  <div class="defn">
+    <div class="defn-src">Tom Mitchell</div>
+    <p class="defn-body">A computer program is said to learn from experience <b>E</b> with respect to some class of tasks <b>T</b> and performance measure <b>P</b>, if its performance at tasks in <b>T</b>, as measured by <b>P</b>, improves with experience <b>E</b>.</p>
+  </div>
+  <div class="defn">
+    <div class="defn-src">Kevin Murphy</div>
+    <p class="defn-body">A set of methods that can automatically detect patterns in data, then use the uncovered patterns to predict future data, or to perform other kinds of decision making under uncertainty.</p>
+  </div>
+</section>
+
+<!-- ============================ 3. NESTING ============================ -->
+<section id="nesting">
+  <h2><span class="marker">03</span>AI, ML and DL</h2>
+
+  <figure style="max-width:420px; margin: 40px auto; background: none; border: none; padding: 0;">
+    <svg viewBox="0 0 400 300" role="img" aria-label="Three nested ellipses: AI contains ML, which contains DL">
+      <ellipse cx="200" cy="150" rx="185" ry="140" fill="#EBF8FF" stroke="#3182CE" stroke-width="2"/>
+      <ellipse cx="200" cy="150" rx="128" ry="97" fill="#BEE3F8" stroke="#3182CE" stroke-width="2"/>
+      <ellipse cx="200" cy="150" rx="66" ry="52" fill="#63B3ED" stroke="#3182CE" stroke-width="2"/>
+      <text x="200" y="42" text-anchor="middle" font-family="Inter, sans-serif" font-size="16" font-weight="700" fill="#2C5282">AI</text>
+      <text x="200" y="88" text-anchor="middle" font-family="Inter, sans-serif" font-size="16" font-weight="700" fill="#2C5282">ML</text>
+      <text x="200" y="156" text-anchor="middle" font-family="Inter, sans-serif" font-size="16" font-weight="700" fill="#1A365D">DL</text>
+    </svg>
+    <figcaption>Deep learning sits inside machine learning, which sits inside artificial intelligence.</figcaption>
+  </figure>
+
+  <h4>Rule-based programs — AI, but not ML</h4>
+  <ul class="plain">
+    <li>Expert systems, e.g. medical diagnosis (if–then).</li>
+    <li>Chess players using hard-coded heuristics.</li>
+    <li>Search algorithms, e.g. A* path finding.</li>
+  </ul>
+
+  <h4>Classical ML</h4>
+  <ul class="plain">
+    <li>Linear regression, Logistic regression</li>
+    <li>Decision trees, Random forests</li>
+    <li>k-nearest neighbours (k-NN)</li>
+    <li>Support vector machines (SVM)</li>
+  </ul>
+
+  <h4>Deep learning</h4>
+  <ul class="plain">
+    <li><b>Computer vision</b> — image classification, object detection</li>
+    <li><b>Natural language processing</b> — large language models, translation</li>
+    <li><b>Speech and audio</b> — speech recognition, generation</li>
+  </ul>
+</section>
+
+<!-- ============================ 4. ROBOT CHEF ============================ -->
+<section id="chef">
+  <h2><span class="marker">04</span>The robot chef</h2>
+
+  <div class="defn">
+    <div class="defn-src">AI</div>
+    <p class="defn-body">Give step-by-step instructions and exact ingredients to the robot. Maximum human intervention.</p>
+  </div>
+  <div class="defn">
+    <div class="defn-src">ML</div>
+    <p class="defn-body">Feed it multiple recipes, let it map underlying ingredients with outcomes, then place your ingredients in front of it.</p>
+  </div>
+  <div class="defn">
+    <div class="defn-src">DL</div>
+    <p class="defn-body">Invents its own recipes and discovers new flavor profiles directly from raw ingredients without predefined mapping.</p>
+  </div>
+
+  <h3>Classical programming vs machine learning</h3>
+
+  <div class="pipe">
+    <!-- Classical Programming Pipeline -->
+    <div class="pipe-row">
+      <div class="pipe-in">
+        <div>Rules <span>fixed, written by a human</span></div>
+        <div>Data <span>e.g., emails</span></div>
+      </div>
+      <div class="pipe-arrow">
+        <svg viewBox="0 0 24 24" width="28" height="28" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+          <polyline points="12 5 19 12 12 19"></polyline>
+        </svg>
+      </div>
+      <div class="pipe-box" style="background: #718096;">Classical<br>programming</div>
+      <div class="pipe-arrow">
+        <svg viewBox="0 0 24 24" width="28" height="28" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+          <polyline points="12 5 19 12 12 19"></polyline>
+        </svg>
+      </div>
+      <div class="pipe-out">
+        <div>Answers <span>e.g., spam / not spam</span></div>
+      </div>
+    </div>
+    
+    <!-- Machine Learning Pipeline -->
+    <div class="pipe-row">
+      <div class="pipe-in">
+        <div>Data <span>e.g., emails</span></div>
+        <div>Answers <span>e.g., spam / not spam</span></div>
+      </div>
+      <div class="pipe-arrow">
+        <svg viewBox="0 0 24 24" width="28" height="28" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+          <polyline points="12 5 19 12 12 19"></polyline>
+        </svg>
+      </div>
+      <div class="pipe-box">Machine<br>learning</div>
+      <div class="pipe-arrow">
+        <svg viewBox="0 0 24 24" width="28" height="28" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+          <polyline points="12 5 19 12 12 19"></polyline>
+        </svg>
+      </div>
+      <div class="pipe-out">
+        <div>Rules <span>learned from the data</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ 5. VOCABULARY ============================ -->
+<section id="vocab">
+  <h2><span class="marker">05</span>Taxonomy and vocabulary</h2>
+
+  <div class="tw">
+    <table>
+      <thead>
+        <tr>
+          <th>House</th>
+          <th>Area (m²)</th>
+          <th>Rooms</th>
+          <th>Age</th>
+          <th>Price</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td class="num">1</td><td class="num">95</td><td class="num">2</td><td class="num">10</td><td class="num">68</td></tr>
+        <tr><td class="num">2</td><td class="num">140</td><td class="num">3</td><td class="num">4</td><td class="num">112</td></tr>
+        <tr><td class="num">3</td><td class="num">60</td><td class="num">1</td><td class="num">22</td><td class="num">41</td></tr>
+        <tr><td class="num">4</td><td class="num">180</td><td class="num">4</td><td class="num">2</td><td class="num">165</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <ol class="vocab">
+    <li><b>Sample / instance / example</b> <span class="gloss">— one row.</span></li>
+    <li><b>Feature / attribute</b> <span class="gloss">— one column.</span></li>
+    <li><b>Label / target</b> <span class="gloss">— the output column.</span></li>
+    <li><b>Feature vector</b> <span class="gloss">— $x^{(3)} = [60, 1, 22]^\top \in \mathbb{R}^3$</span></li>
+    <li><b>Design matrix</b> <span class="gloss">— $X \in \mathbb{R}^{n \times d}$</span></li>
+    <li><b>Label vector</b> <span class="gloss">— $y \in \mathbb{R}^n$</span></li>
+    <li><b>Model</b> <span class="gloss">— $h_\theta : \mathbb{R}^d \to \mathbb{R}$</span></li>
+    <li><b>Parameters ($\theta$)</b> <span class="gloss">— learned from the data.</span></li>
+    <li><b>Hyperparameters</b> <span class="gloss">— set before training.</span></li>
+    <li><b>Prediction</b> <span class="gloss">— $\hat{y}$</span></li>
+  </ol>
+</section>
+
+<!-- ============================ 6. TYPES ============================ -->
+<section id="types">
+  <h2><span class="marker">06</span>Types of learning</h2>
+
+  <h3>Supervised learning</h3>
+  <p>Data comes labelled: $\{(x^{(i)}, y^{(i)})\}$ for $i = 1 \dots n$. Learn the mapping $x \mapsto y$.</p>
+  <ul class="plain">
+    <li><b>Regression</b> — $y$ is continuous.</li>
+    <li><b>Classification</b> — $y$ is categorical.</li>
+  </ul>
+
+  <h3>Unsupervised learning</h3>
+  <p>No labels, only $\{x^{(i)}\}$. Learn underlying structure.</p>
+  <ul class="plain">
+    <li><b>Clustering</b> — group similar samples.</li>
+    <li><b>Dimensionality reduction</b> — find a lower-dimensional representation.</li>
+  </ul>
+</section>
+
+<!-- ============================ 7. DOT PRODUCT ============================ -->
+<section id="dot">
+  <h2><span class="marker">07</span>Vectors and dot products</h2>
+
+  <ol class="rules">
+    <li>Every sample is a vector.</li>
+    <li>Every dataset is a matrix.</li>
+    <li>Every model relies heavily on $w^\top x + b$ — a dot product.</li>
+  </ol>
+
+  <p>A vector $x \in \mathbb{R}^d$ is an ordered list of $d$ numbers.</p>
+
+  <div class="eq key">
+    <span class="label">Dot product</span>
+    $$ u^\top v = \sum_{i=1}^d u_i v_i = \|u\| \|v\| \cos \theta $$
+  </div>
+
+  <ul class="plain">
+    <li>$u^\top v = 0 \text{ if } u \perp v$</li>
+    <li>$x^\top x = \|x\|_2^2$</li>
+    <li>$\text{cosine similarity}(u, v) = \frac{u^\top v}{\|u\| \|v\|} \in [-1, 1]$</li>
+  </ul>
+
+  <div class="tw">
+    <table>
+      <thead>
+        <tr>
+          <th class="rowlab"></th>
+          <th>Dot product</th>
+          <th>Cosine similarity</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="rowlab">Formula</td>
+          <td>$\sum_i u_i v_i$</td>
+          <td>$\frac{u^\top v}{\|u\| \|v\|}$</td>
+        </tr>
+        <tr>
+          <td class="rowlab">Range</td>
+          <td>$(-\infty, +\infty)$</td>
+          <td>$[-1, +1]$</td>
+        </tr>
+        <tr>
+          <td class="rowlab">Sensitive to length</td>
+          <td>Yes</td>
+          <td>No</td>
+        </tr>
+        <tr>
+          <td class="rowlab">Interpretation</td>
+          <td>How much do these align, weighted by size?</td>
+          <td>How aligned are these, regardless of size?</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ============================ 8. NORMS ============================ -->
+<section id="norms">
+  <h2><span class="marker">08</span>Norms</h2>
+
+  <h3>Vector subtraction</h3>
+
+  <figure style="max-width:440px; margin: 32px auto;">
+    <svg viewBox="0 0 360 250" role="img" aria-label="Two vectors from the origin with the difference vector joining their heads">
+      <defs>
+        <marker id="arrowBlue" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+          <path d="M0,0 L0,8 L8,4 z" fill="#3182CE" />
+        </marker>
+        <marker id="arrowRed" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+          <path d="M0,0 L0,8 L8,4 z" fill="#E53E3E" />
+        </marker>
+        <marker id="arrowDark" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+          <path d="M0,0 L0,8 L8,4 z" fill="#718096" />
+        </marker>
+      </defs>
+
+      <!-- Axes -->
+      <line x1="34" y1="215" x2="340" y2="215" stroke="#718096" stroke-width="1.5" marker-end="url(#arrowDark)"/>
+      <line x1="34" y1="215" x2="34" y2="20" stroke="#718096" stroke-width="1.5" marker-end="url(#arrowDark)"/>
+      <text x="345" y="220" font-family="Merriweather, serif" font-size="14" font-style="italic" fill="#718096">x</text>
+      <text x="20" y="16" font-family="Merriweather, serif" font-size="14" font-style="italic" fill="#718096">y</text>
+
+      <!-- v1 -->
+      <line x1="34" y1="215" x2="235" y2="150" stroke="#3182CE" stroke-width="2.5" marker-end="url(#arrowBlue)"/>
+      <text x="145" y="198" font-family="Merriweather, serif" font-size="16" font-style="italic" fill="#3182CE" font-weight="bold">v₁</text>
+
+      <!-- v2 -->
+      <line x1="34" y1="215" x2="160" y2="58" stroke="#3182CE" stroke-width="2.5" marker-end="url(#arrowBlue)"/>
+      <text x="80" y="112" font-family="Merriweather, serif" font-size="16" font-style="italic" fill="#3182CE" font-weight="bold">v₂</text>
+
+      <!-- v2 - v1 -->
+      <line x1="235" y1="150" x2="165" y2="64" stroke="#E53E3E" stroke-width="2.5" marker-end="url(#arrowRed)"/>
+      <text x="210" y="98" font-family="Merriweather, serif" font-size="15" font-style="italic" fill="#E53E3E" font-weight="bold">Δv = v₂ − v₁</text>
+    </svg>
+    <figcaption><b>End minus start.</b> The arrow runs from the head of $v_1$ to the head of $v_2$, denoting $\Delta v = v_2 - v_1$.</figcaption>
+  </figure>
+
+  <h3>What a norm is</h3>
+  <p>A norm is used to measure how big a vector is, and to measure how far one vector is from another. Formally:</p>
+
+  <div class="eq center">
+    $f : \mathbb{R}^d \to \mathbb{R}, \quad \forall x, y \in \mathbb{R}^d$ and $\forall \alpha \in \mathbb{R}$
+  </div>
+
+  <ol class="vocab" style="margin-top:0">
+    <li><b>Non-negativity</b> <span class="gloss">— $f(x) \ge 0$</span></li>
+    <li><b>Definiteness</b> <span class="gloss">— $f(x) = 0 \iff x = 0$</span></li>
+    <li><b>Triangle inequality</b> <span class="gloss">— $f(x + y) \le f(x) + f(y)$</span></li>
+    <li><b>Absolute homogeneity</b> <span class="gloss">— $f(\alpha x) = |\alpha| f(x)$</span></li>
+  </ol>
+
+  <div class="eq">
+    <span class="label">Worked example — how big is a vector?</span>
+    $$
+    \begin{aligned}
+    v &= [3, 4]^\top \\
+    \|v\| &= \sqrt{3^2 + 4^2} = 5
+    \end{aligned}
+    $$
+  </div>
+
+  <h3>The three norms</h3>
+
+  <div class="figrow">
+    <!-- L1 Norm (Manhattan) -->
+    <figure>
+      <svg viewBox="0 0 200 200" role="img" aria-label="L1 unit balls: nested diamonds">
+        <line x1="10" y1="100" x2="190" y2="100" stroke="#CBD5E0" stroke-width="1.5"/>
+        <line x1="100" y1="10" x2="100" y2="190" stroke="#CBD5E0" stroke-width="1.5"/>
+        
+        <!-- r=75 (Outer) -->
+        <polygon points="100,25 175,100 100,175 25,100" fill="none" stroke="#E53E3E" stroke-width="1.5" opacity="0.3"/>
+        
+        <!-- r=50 (Mid) -->
+        <polygon points="100,50 150,100 100,150 50,100" fill="none" stroke="#E53E3E" stroke-width="2" opacity="0.6"/>
+        <circle cx="150" cy="100" r="3" fill="#2C5282"/>
+        <text x="154" y="96" font-family="Inter,sans-serif" font-size="11" fill="#2C5282" font-weight="600">(2,0)</text>
+        <circle cx="100" cy="50" r="3" fill="#2C5282"/>
+        <text x="105" y="46" font-family="Inter,sans-serif" font-size="11" fill="#2C5282" font-weight="600">(0,2)</text>
+        <circle cx="50" cy="100" r="3" fill="#2C5282"/>
+        <text x="20" y="96" font-family="Inter,sans-serif" font-size="11" fill="#2C5282" font-weight="600">(-2,0)</text>
+        <circle cx="100" cy="150" r="3" fill="#2C5282"/>
+        <text x="105" y="156" font-family="Inter,sans-serif" font-size="11" fill="#2C5282" font-weight="600">(0,-2)</text>
+
+        <!-- r=25 (Inner) -->
+        <polygon points="100,75 125,100 100,125 75,100" fill="#FFF5F5" stroke="#E53E3E" stroke-width="2.5"/>
+        <circle cx="125" cy="100" r="3" fill="#2C5282"/>
+        <text x="129" y="112" font-family="Inter,sans-serif" font-size="11" fill="#2C5282" font-weight="600">(1,0)</text>
+        <circle cx="100" cy="75" r="3" fill="#2C5282"/>
+        <text x="73" y="70" font-family="Inter,sans-serif" font-size="11" fill="#2C5282" font-weight="600">(0,1)</text>
+        <circle cx="75" cy="100" r="3" fill="#2C5282"/>
+        <text x="45" y="112" font-family="Inter,sans-serif" font-size="11" fill="#2C5282" font-weight="600">(-1,0)</text>
+        <circle cx="100" cy="125" r="3" fill="#2C5282"/>
+        <text x="68" y="137" font-family="Inter,sans-serif" font-size="11" fill="#2C5282" font-weight="600">(0,-1)</text>
+      </svg>
+      <figcaption><b>L1 — Manhattan distance</b><br>$\|x\|_1 = |x_1| + |x_2| + \dots + |x_n|$</figcaption>
+    </figure>
+
+    <!-- L2 Norm (Euclidean) -->
+    <figure>
+      <svg viewBox="0 0 200 200" role="img" aria-label="L2 unit balls: nested circles">
+        <line x1="10" y1="100" x2="190" y2="100" stroke="#CBD5E0" stroke-width="1.5"/>
+        <line x1="100" y1="10" x2="100" y2="190" stroke="#CBD5E0" stroke-width="1.5"/>
+        <circle cx="100" cy="100" r="75" fill="none" stroke="#E53E3E" stroke-width="1.5" opacity="0.3"/>
+        <circle cx="100" cy="100" r="50" fill="none" stroke="#E53E3E" stroke-width="2" opacity="0.6"/>
+        <circle cx="100" cy="100" r="25" fill="#FFF5F5" stroke="#E53E3E" stroke-width="2.5"/>
+      </svg>
+      <figcaption><b>L2 — Euclidean distance</b><br>$\|x\|_2 = \sqrt{x_1^2 + x_2^2}$</figcaption>
+    </figure>
+
+    <!-- L-Infinity Norm (Max) -->
+    <figure>
+      <svg viewBox="0 0 200 200" role="img" aria-label="L-infinity unit balls: nested squares">
+        <line x1="10" y1="100" x2="190" y2="100" stroke="#CBD5E0" stroke-width="1.5"/>
+        <line x1="100" y1="10" x2="100" y2="190" stroke="#CBD5E0" stroke-width="1.5"/>
+        
+        <!-- r=75 (Outer) -->
+        <rect x="25" y="25" width="150" height="150" fill="none" stroke="#E53E3E" stroke-width="1.5" opacity="0.3"/>
+        
+        <!-- r=50 (Mid) -->
+        <rect x="50" y="50" width="100" height="100" fill="none" stroke="#E53E3E" stroke-width="2" opacity="0.6"/>
+        <circle cx="150" cy="50" r="3" fill="#2C5282"/>
+        <text x="154" y="46" font-family="Inter,sans-serif" font-size="11" fill="#2C5282" font-weight="600">(2,2)</text>
+        <circle cx="50" cy="50" r="3" fill="#2C5282"/>
+        <text x="20" y="46" font-family="Inter,sans-serif" font-size="11" fill="#2C5282" font-weight="600">(-2,2)</text>
+        <circle cx="50" cy="150" r="3" fill="#2C5282"/>
+        <text x="15" y="162" font-family="Inter,sans-serif" font-size="11" fill="#2C5282" font-weight="600">(-2,-2)</text>
+        <circle cx="150" cy="150" r="3" fill="#2C5282"/>
+        <text x="154" y="162" font-family="Inter,sans-serif" font-size="11" fill="#2C5282" font-weight="600">(2,-2)</text>
+
+        <!-- r=25 (Inner) -->
+        <rect x="75" y="75" width="50" height="50" fill="#FFF5F5" stroke="#E53E3E" stroke-width="2.5"/>
+        <circle cx="125" cy="75" r="3" fill="#2C5282"/>
+        <text x="129" y="71" font-family="Inter,sans-serif" font-size="11" fill="#2C5282" font-weight="600">(1,1)</text>
+        <circle cx="75" cy="75" r="3" fill="#2C5282"/>
+        <text x="47" y="71" font-family="Inter,sans-serif" font-size="11" fill="#2C5282" font-weight="600">(-1,1)</text>
+        <circle cx="75" cy="125" r="3" fill="#2C5282"/>
+        <text x="42" y="137" font-family="Inter,sans-serif" font-size="11" fill="#2C5282" font-weight="600">(-1,-1)</text>
+        <circle cx="125" cy="125" r="3" fill="#2C5282"/>
+        <text x="129" y="137" font-family="Inter,sans-serif" font-size="11" fill="#2C5282" font-weight="600">(1,-1)</text>
+      </svg>
+      <figcaption><b>L∞ — Max norm</b><br>$\|x\|_\infty = \max(|x_1|, |x_2|)$</figcaption>
+    </figure>
+  </div>
+
+  <h4>Points on the L1 unit ball</h4>
+  <p>If $\|x\|_1 = 1$, then $|x| + |y| = 1$:</p>
+
+  <div class="tw" style="max-width:320px">
+    <table>
+      <thead><tr><th>$|x|$</th><th>$|y|$</th></tr></thead>
+      <tbody>
+        <tr><td class="num">1</td><td class="num">0</td></tr>
+        <tr><td class="num">0</td><td class="num">1</td></tr>
+        <tr><td class="num">0.5</td><td class="num">0.5</td></tr>
+        <tr><td class="num">0.3</td><td class="num">0.7</td></tr>
+        <tr><td class="num">0.7</td><td class="num">0.3</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note">
+    <p><strong>Note on max norm:</strong> If we want $\|x\|_\infty = 1$, then either $|x_1|$ or $|x_2|$ (or both) must equal 1.</p>
+  </div>
+
+  <h3>Worked example</h3>
+
+  <div class="eq">
+    <span class="label">$x = [2, -3, 6]^\top$</span>
+    $$
+    \begin{aligned}
+    \|x\|_1 &= 2 + 3 + 6 = \mathbf{11} \\
+    \|x\|_2 &= \sqrt{4 + 9 + 36} = \sqrt{49} = \mathbf{7} \\
+    \|x\|_\infty &= \max(2, 3, 6) = \mathbf{6}
+    \end{aligned}
+    $$
+  </div>
+
+  <div class="eq key">
+    <span class="label">The norm is non-increasing in p</span>
+    $$ \|x\|_1 \ge \|x\|_2 \ge \dots \ge \|x\|_\infty $$
+  </div>
+</section>
+
+<!-- ============================ 9. LP FAMILY ============================ -->
+<section id="lp">
+  <h2><span class="marker">09</span>The L<sub>p</sub> family</h2>
+
+  <div class="eq key">
+    $$ \|x\|_p = \left( \sum_{i=1}^d |x_i|^p \right)^{1/p} \quad ; \quad p \ge 1 $$
+  </div>
+
+  <div class="eq">
+    <span class="label">L3 norm</span>
+    $$ \sqrt[3]{|x_1|^3 + |x_2|^3 + \dots + |x_d|^3} $$
+  </div>
+
+  <h3>Why the norm shrinks as p grows</h3>
+  <div class="eq">
+    $$ u = \frac{x}{\|x\|_p} \implies \|u\|_p = 1 \implies |u_i| \le 1 $$
+  </div>
+
+  <h3>For $0 < p < 1$, it is not a norm</h3>
+  <div class="eq">
+    <span class="label">Counterexample with $p = 0.5$</span>
+    $$
+    \begin{aligned}
+    x &= [1, 0]^\top, \quad y = [0, 1]^\top \\
+    \|x + y\|_{0.5} &= (\sqrt{1} + \sqrt{1})^2 = 4 \\
+    \|x\|_{0.5} + \|y\|_{0.5} &= 1 + 1 = 2
+    \end{aligned}
+    $$
+    <div style="text-align: center; margin-top: 12px;">$4 > 2 \implies$ <b>not a norm</b> <span class="reason">(the triangle inequality fails)</span></div>
+  </div>
+
+  <h3>Two contrasting vectors</h3>
+  <div class="tw" style="max-width:400px">
+    <table>
+      <thead><tr><th>$x$</th><th>$L_1$</th><th>$L_2$</th></tr></thead>
+      <tbody>
+        <tr><td>(5, 0, 0)</td><td class="num">5</td><td class="num">5</td></tr>
+        <tr><td>(1, 1, 1)</td><td class="num">3</td><td class="num">$\sqrt{3}$</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ============================ 10. MEAN & VARIANCE ============================ -->
+<section id="meanvar">
+  <h2><span class="marker">10</span>Mean and variance</h2>
+
+  <h3>Mean — the average of a random variable</h3>
+
+  <div class="figrow" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr))">
+    <div class="eq" style="margin:0">
+      <span class="label">Sample Mean</span>
+      $$ \frac{1}{n} \sum_{i=1}^n x_i $$
+    </div>
+    <div class="eq" style="margin:0">
+      <span class="label">Population Mean</span>
+      $$ \mu = \mathbb{E}[X] = \sum_x x P(X = x) $$
+    </div>
+  </div>
+
+  <h3>Variance</h3>
+  <p>How much a random variable deviates from its mean.</p>
+
+  <div class="eq key">
+    $$
+    \begin{aligned}
+    \text{Var}(X) &= \mathbb{E}[ (X - \mathbb{E}[X])^2 ] \\
+    \text{Var}(X) &= \mathbb{E}[X^2] - (\mathbb{E}[X])^2
+    \end{aligned}
+    $$
+  </div>
+
+  <h4>Standard deviation</h4>
+  <div class="eq">
+    $$ \sigma_x = \sqrt{\text{Var}(X)} = \sqrt{\mathbb{E}[ (X - \mathbb{E}[X])^2 ]} $$
+  </div>
+
+  <h3>Covariance</h3>
+  <p>How two variables move together.</p>
+
+  <div class="eq key">
+    $$
+    \begin{aligned}
+    \text{Cov}(X, Y) &= \mathbb{E}[ (X - \mathbb{E}[X])(Y - \mathbb{E}[Y]) ] \\
+    \text{Cov}(X, Y) &= \mathbb{E}[XY] - \mathbb{E}[X]\mathbb{E}[Y]
+    \end{aligned}
+    $$
+  </div>
+
+  <h3>Scaling</h3>
+
+  <div class="eq key">
+    $$
+    \begin{aligned}
+    \mathbb{E}[aX] &= a\mathbb{E}[X] \\
+    \text{Var}(aX) &= a^2\text{Var}(X)
+    \end{aligned}
+    $$
+  </div>
+
+  <div class="eq">
+    <span class="label">Derivation</span>
+    $$
+    \begin{aligned}
+    \text{Var}(aX) &= \mathbb{E}[ (aX - \mathbb{E}[aX])^2 ] \\
+    &= \mathbb{E}[ (aX - a\mathbb{E}[X])^2 ] \\
+    &= a^2 \mathbb{E}[ (X - \mathbb{E}[X])^2 ] \\
+    &= a^2 \text{Var}(X)
+    \end{aligned}
+    $$
+  </div>
+
+  <h3>Variance of a sum</h3>
+
+  <div class="eq key">
+    $$ \text{Var}(X + Y) = \text{Var}(X) + \text{Var}(Y) + \text{Cov}(X, Y) + \text{Cov}(Y, X) $$
+  </div>
+
+  <div class="eq">
+    <span class="label">Derivation</span>
+    $$
+    \begin{aligned}
+    \text{Var}(x + y) &= \mathbb{E}[ ((x + y) - \mathbb{E}[x + y])^2 ] \\
+    & \quad \text{(but } \mathbb{E}[x + y] = \mathbb{E}[x] + \mathbb{E}[y] \text{)} \\
+    &= \mathbb{E}[ ((x + y) - \mathbb{E}[x] - \mathbb{E}[y])^2 ] \\
+    &= \mathbb{E}[ ((x - \mathbb{E}[x]) + (y - \mathbb{E}[y]))^2 ] \\
+    &= \mathbb{E}[ (x - \mathbb{E}[x])^2 + (y - \mathbb{E}[y])^2 + 2(x - \mathbb{E}[x])(y - \mathbb{E}[y]) ] \\
+    &= \mathbb{E}[ (x - \mathbb{E}[x])^2 ] + \mathbb{E}[ (y - \mathbb{E}[y])^2 ] + 2\mathbb{E}[ (x - \mathbb{E}[x])(y - \mathbb{E}[y]) ]
+    \end{aligned}
+    $$
+  </div>
+
+  <div class="eq key">
+    $$
+    \begin{aligned}
+    \text{Var}(X + Y) &= \text{Var}(X) + \text{Var}(Y) + 2\text{Cov}(X, Y) \\
+    \text{Var}(X - Y) &= \text{Var}(X) + \text{Var}(Y) - 2\text{Cov}(X, Y)
+    \end{aligned}
+    $$
+  </div>
+</section>
+
+<!-- ============================ 11. CORRELATION ============================ -->
+<section id="corr">
+  <h2><span class="marker">11</span>Correlation</h2>
+
+  <p>Normalized covariance.</p>
+
+  <div class="eq key">
+    $$ \rho_{x,y} = \frac{\text{Cov}(X, Y)}{\sigma_x \sigma_y} \quad ; \quad -1 \le \rho \le 1 $$
+  </div>
+
+  <ol class="vocab">
+    <li><b>$\rho = +1$</b> <span class="gloss">— Positive linear relationship.</span></li>
+    <li><b>$\rho = -1$</b> <span class="gloss">— Negative linear relationship.</span></li>
+    <li><b>$\rho = 0$</b> <span class="gloss">— No linear relationship.</span></li>
+  </ol>
+
+  <h3>Three things to remember</h3>
+
+  <ol class="rules">
+    <li>Independence $\implies$ zero correlation.</li>
+    <li>Zero correlation $\not\implies$ independence.</li>
+    <li>Correlation does not imply causation.</li>
+  </ol>
+
+  <h4>Counterexample for (2)</h4>
+
+  <div class="eq">
+    $$
+    \begin{aligned}
+    X &\sim \mathcal{U}\{-1, 0, 1\}, \quad Y = X^2 \\
+    \mathbb{E}[X] &= 0 \\
+    \mathbb{E}[XY] &= \mathbb{E}[X^3] = 0 \\
+    \text{Cov}(X, Y) &= \mathbb{E}[ (X - \mathbb{E}[X])(Y - \mathbb{E}[Y]) ] \\
+    &= \mathbb{E}[XY] \\
+    &= 0
+    \end{aligned}
+    $$
+  </div>
+
+  <div class="note">
+    <p><strong>Insight:</strong> $Y$ is a deterministic function of $X$ — knowing $X$ tells you $Y$ exactly — yet the covariance is zero. Correlation only sees straight lines.</p>
+  </div>
+</section>
+
+<footer>
+  <p>Lecture 1 — Intro, Norms, Mean &amp; Variance &nbsp;·&nbsp; 31 August 2026</p>
+</footer>
+
+</div><!-- /sheet -->
+</body>
+</html>
