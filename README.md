@@ -18,4 +18,6 @@ Lec 7 (MAP and MLE): https://aarushiaiyyariitb.github.io/Machine-Learning-Notes/
 
 Lec 8 (Naive Bayes Classifier): https://aarushiaiyyariitb.github.io/Machine-Learning-Notes/Lec%20-%208/
 
+Lec 9 (Linear Discriminant Analysis): https://aarushiaiyyariitb.github.io/Machine-Learning-Notes/Lec%20-%209/
+
 
