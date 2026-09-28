@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Directional Variance Visualization</title>
+    <style>
+        :root {
+            --primary-text: #212529;
+            --bg-color: #f7f8fa;
+            --panel-bg: #ffffff;
+            --accent-blue: #007bb5;
+            --accent-red: #d90429;
+            --grid-line: #dee2e6;
+            --pill-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            --panel-shadow: 0 4px 15px rgba(0,0,0,0.04);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--primary-text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden; /* Prevents iframe horizontal scroll */
+        }
+
+        .header {
+            text-align: center;
+            max-width: 800px;
+            margin-bottom: 25px;
+        }
+
+        h1 { margin: 0 0 10px 0; font-size: 24px; color: #1a1c29; }
+        p { margin: 0; color: #555; line-height: 1.5; font-size: 15px; }
+
+        /* The flex-wrap: nowrap here forces the side-by-side layout */
+        .dashboard {
+            display: flex;
+            gap: 20px;
+            flex-wrap: nowrap; 
+            justify-content: center;
+            width: 100%;
+            max-width: 900px;
+            margin-bottom: 30px;
+        }
+
+        .panel {
+            background: var(--panel-bg);
+            border-radius: 12px;
+            border: 1px solid #eef0f2;
+            padding: 20px;
+            box-shadow: var(--panel-shadow);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1 1 50%; /* Each takes exactly 50% */
+            min-width: 0; /* Prevents flexbox blowout */
+        }
+
+        canvas {
+            background-color: transparent;
+            width: 100%; /* Dynamically scales inside the panel */
+            max-width: 400px; 
+            height: auto;
+            aspect-ratio: 1 / 1; /* Keeps it perfectly square */
+        }
+
+        .stats {
+            margin-top: 20px;
+            display: flex;
+            gap: 25px;
+            font-family: monospace;
+            font-size: 16px;
+        }
+
+        .val-vector { color: var(--accent-red); font-weight: bold; }
+        .val-variance { color: var(--accent-blue); font-weight: bold; }
+
+        /* Pill Container styling */
+        .controls-wrapper {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+
+        .controls {
+            display: inline-flex;
+            align-items: center;
+            gap: 15px;
+            background: white;
+            padding: 10px 25px;
+            border-radius: 50px;
+            box-shadow: var(--pill-shadow);
+            border: 1px solid #eef0f2;
+        }
+
+        button {
+            background: #2b2d42;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button:hover { background: #1a1c29; }
+
+        .controls label {
+            font-size: 14px;
+            color: #333;
+        }
+
+        /* Custom Slider Styling */
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 150px;
+            height: 6px;
+            background: #e9ecef;
+            border-radius: 5px;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--accent-blue);
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Maximizing Projected Variance</h1>
+        <p>Watch how the value of <b>vᵀ S_W v</b> rises and falls as the unit vector <b>v</b> sweeps in a circle. The variance mathematically peaks when aligned with the major axis and hits its minimum at the minor axis.</p>
+    </div>
+
+    <div class="dashboard">
+        <div class="panel">
+            <!-- Canvas original resolution remains 400x400 for crisp drawing -->
+            <canvas id="vizCanvas" width="400" height="400"></canvas>
+            <div class="stats">
+                <div>Angle (v): <span id="angleOut" class="val-vector">0°</span></div>
+                <div>vᵀ S_W v: <span id="varOut" class="val-variance">0.00</span></div>
+            </div>
+        </div>
+        <div class="panel">
+            <canvas id="graphCanvas" width="400" height="400"></canvas>
+        </div>
+    </div>
+
+    <div class="controls-wrapper">
+        <div class="controls">
+            <button id="playBtn">Play</button>
+            <label for="angleSlider">Manual Control:</label>
+            <input type="range" id="angleSlider" min="0" max="360" value="0" step="1">
+        </div>
+    </div>
+
+    <script>
+        const lambda1 = 9.0; 
+        const lambda2 = 1.0; 
+        const theta = 30 * (Math.PI / 180); 
+        
+        const cosT = Math.cos(theta), sinT = Math.sin(theta);
+        const S00 = lambda1 * cosT * cosT + lambda2 * sinT * sinT;
+        const S01 = lambda1 * cosT * sinT - lambda2 * sinT * cosT;
+        const S10 = S01;
+        const S11 = lambda1 * sinT * sinT + lambda2 * cosT * cosT;
+
+        function getProjectedVariance(alpha) {
+            const v0 = Math.cos(alpha);
+            const v1 = Math.sin(alpha);
+            return v0 * (S00 * v0 + S01 * v1) + v1 * (S10 * v0 + S11 * v1);
+        }
+
+        const viz = document.getElementById('vizCanvas').getContext('2d');
+        const graph = document.getElementById('graphCanvas').getContext('2d');
+        let currentAngle = 44 * (Math.PI / 180); // Start at 44 degrees to match screenshot
+        let isPlaying = false; // Default to paused to match screenshot state
+        let animationId;
+
+        const UNIT_SCALE = 50; 
+
+        
+
+        function drawGrid(ctx, width, height) {
+            // Only draw the background axes here
+            ctx.strokeStyle = '#6c757d';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(-width/2, 0); ctx.lineTo(width/2, 0);
+            ctx.moveTo(0, -height/2); ctx.lineTo(0, height/2);
+            ctx.stroke();
+        }
+
+        function drawViz() {
+            viz.clearRect(0, 0, 400, 400);
+            viz.save();
+            viz.translate(200, 200);
+            viz.scale(1, -1);
+
+            // 1. Draw Grid in background
+            drawGrid(viz, 400, 400);
+
+            const rMajor = Math.sqrt(lambda1) * UNIT_SCALE; 
+            const rMinor = Math.sqrt(lambda2) * UNIT_SCALE;
+            
+            // 2. Draw Major Axis Guide
+            viz.beginPath();
+            viz.moveTo(-Math.cos(theta) * rMajor, -Math.sin(theta) * rMajor);
+            viz.lineTo(Math.cos(theta) * rMajor, Math.sin(theta) * rMajor);
+            viz.strokeStyle = 'rgba(0, 119, 182, 0.2)';
+            viz.lineWidth = 1;
+            viz.stroke();
+
+            // 3. Draw Ellipse Fill & Outline
+            viz.beginPath();
+            viz.ellipse(0, 0, rMajor, rMinor, theta, 0, 2 * Math.PI);
+            viz.fillStyle = '#e9f2f9'; 
+            viz.fill();
+            viz.lineWidth = 2;
+            viz.strokeStyle = '#b6d4e8'; 
+            viz.stroke();
+
+            // 4. Draw Dotted Unit Circle ON TOP of the ellipse
+            viz.strokeStyle = '#ced4da';
+            viz.lineWidth = 1.5;
+            viz.setLineDash([5, 5]);
+            viz.beginPath();
+            viz.arc(0, 0, UNIT_SCALE, 0, 2 * Math.PI);
+            viz.stroke();
+            viz.setLineDash([]);
+
+            // 5. Draw Vector on top of everything
+            const vx = Math.cos(currentAngle) * UNIT_SCALE;
+            const vy = Math.sin(currentAngle) * UNIT_SCALE;
+            
+            viz.beginPath();
+            viz.moveTo(0, 0);
+            viz.lineTo(vx, vy);
+            viz.lineWidth = 2;
+            viz.strokeStyle = '#8ab4f8'; 
+            viz.stroke();
+
+            // Vector arrowhead
+            viz.beginPath();
+            viz.translate(vx, vy);
+            viz.rotate(currentAngle);
+            viz.moveTo(0, 0);
+            viz.lineTo(-8, 4);
+            viz.lineTo(-8, -4);
+            viz.fillStyle = '#8ab4f8';
+            viz.fill();
+
+            viz.restore();
+        }
+
+        function drawGraph() {
+            graph.clearRect(0, 0, 400, 400);
+            const padL = 50, padR = 20, padT = 30, padB = 40;
+            const w = 400 - padL - padR;
+            const h = 400 - padT - padB;
+            const maxVar = 10; 
+
+            // Axes
+            graph.strokeStyle = '#ced4da';
+            graph.lineWidth = 1.5;
+            graph.beginPath();
+            graph.moveTo(padL, padT); graph.lineTo(padL, padT + h);
+            graph.lineTo(padL + w, padT + h);
+            graph.stroke();
+
+            graph.fillStyle = '#495057';
+            graph.font = '12px sans-serif';
+            graph.textAlign = 'right';
+            graph.fillText('Max (9)', padL - 8, padT + h - (9/maxVar)*h + 4);
+            graph.fillText('Min (1)', padL - 8, padT + h - (1/maxVar)*h + 4);
+            graph.fillText('0', padL - 8, padT + h + 4);
+
+            // Sine Curve
+            graph.beginPath();
+            graph.strokeStyle = '#adb5bd';
+            graph.lineWidth = 2;
+            for (let a = 0; a <= 360; a++) {
+                const rad = a * (Math.PI / 180);
+                const variance = getProjectedVariance(rad);
+                const x = padL + (a / 360) * w;
+                const y = padT + h - (variance / maxVar) * h;
+                if (a === 0) graph.moveTo(x, y);
+                else graph.lineTo(x, y);
+            }
+            graph.stroke();
+
+            const currentDeg = (currentAngle * 180 / Math.PI) % 360;
+            const displayDeg = currentDeg < 0 ? currentDeg + 360 : currentDeg;
+            const currentVar = getProjectedVariance(currentAngle);
+            const px = padL + (displayDeg / 360) * w;
+            const py = padT + h - (currentVar / maxVar) * h;
+
+            // Sweeping Line
+            graph.beginPath();
+            graph.moveTo(px, padT);
+            graph.lineTo(px, padT + h);
+            graph.strokeStyle = 'rgba(217, 4, 41, 0.4)'; // Light red vertical tracker
+            graph.lineWidth = 1.5;
+            graph.stroke();
+
+            // Dot
+            graph.beginPath();
+            graph.arc(px, py, 5, 0, 2*Math.PI);
+            graph.fillStyle = '#495057'; // Dark gray dot
+            graph.fill();
+
+            graph.textAlign = 'center';
+            graph.fillText(Math.round(displayDeg) + '°', px, padT + h + 20);
+        }
+
+        function updateUI() {
+            const deg = (currentAngle * 180 / Math.PI) % 360;
+            const displayDeg = deg < 0 ? deg + 360 : deg;
+            const variance = getProjectedVariance(currentAngle);
+            
+            document.getElementById('angleOut').innerText = Math.round(displayDeg) + '°';
+            document.getElementById('varOut').innerText = variance.toFixed(2);
+            document.getElementById('angleSlider').value = displayDeg;
+        }
+
+        function loop() {
+            if (isPlaying) {
+                currentAngle += 0.01; 
+                if (currentAngle >= 2 * Math.PI) currentAngle -= 2 * Math.PI;
+            }
+            drawViz();
+            drawGraph();
+            updateUI();
+            animationId = requestAnimationFrame(loop);
+        }
+
+        document.getElementById('playBtn').addEventListener('click', (e) => {
+            isPlaying = !isPlaying;
+            e.target.innerText = isPlaying ? "Pause" : "Play";
+        });
+
+        document.getElementById('angleSlider').addEventListener('input', (e) => {
+            isPlaying = false;
+            document.getElementById('playBtn').innerText = "Play";
+            currentAngle = e.target.value * (Math.PI / 180);
+            drawViz();
+            drawGraph();
+            updateUI();
+        });
+
+        loop();
+    </script>
+</body>
+</html>
