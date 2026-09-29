@@ -20,4 +20,6 @@ Lec 8 (Naive Bayes Classifier): https://aarushiaiyyariitb.github.io/Machine-Lear
 
 Lec 9 (Linear Discriminant Analysis): https://aarushiaiyyariitb.github.io/Machine-Learning-Notes/Lec%20-%209/
 
+Lec 10 (Support Vector Machines): https://aarushiaiyyariitb.github.io/Machine-Learning-Notes/Lec%20-%2010/
+
 
