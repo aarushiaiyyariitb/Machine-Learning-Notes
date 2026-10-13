@@ -4,6 +4,8 @@
 
 2. To access the notes of each lecture, click on the links below:
 
+SUPERVISED LEARNING:
+
 Lec 1 (Intro to ML and Norms): https://aarushiaiyyariitb.github.io/Machine-Learning-Notes/Lec%20-%201/
 
 Lec 2 and Lec 3 (Linear Regression): https://aarushiaiyyariitb.github.io/Machine-Learning-Notes/Lec%20-%202/
@@ -22,4 +24,6 @@ Lec 9 (Linear Discriminant Analysis): https://aarushiaiyyariitb.github.io/Machin
 
 Lec 10 (Support Vector Machines): https://aarushiaiyyariitb.github.io/Machine-Learning-Notes/Lec%20-%2010/
 
+UNSUPERVISED LEARNING:
 
+Lec 11 (Clustering): https://aarushiaiyyariitb.github.io/Machine-Learning-Notes/Lec%20-%2011/
